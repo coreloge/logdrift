@@ -1,0 +1,24 @@
+# logdrift.example.yaml — copy to logdrift.yaml and customise.
+
+# diff_mode: when true, logdrift highlights lines that appear in one service
+# but not the others within a rolling time window.
+diff_mode: false
+
+# max_lines: maximum number of lines to keep in the rolling buffer per service.
+max_lines: 500
+
+services:
+  # Tail a running Docker container's stdout/stderr.
+  - name: api
+    command: "docker logs -f --tail 50 my-api-container"
+    color: cyan
+
+  # Tail a local log file.
+  - name: worker
+    file: "/var/log/myapp/worker.log"
+    color: yellow
+
+  # Tail output from any shell command.
+  - name: nginx
+    command: "tail -F /var/log/nginx/access.log"
+    color: green
