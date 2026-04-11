@@ -3,6 +3,7 @@
 package snapshot
 
 import (
+	"sort"
 	"sync"
 	"time"
 
@@ -39,6 +40,7 @@ func (s *Snapshot) Services() []string {
 	for k := range s.Entries {
 		names = append(names, k)
 	}
+	sort.Strings(names)
 	return names
 }
 
