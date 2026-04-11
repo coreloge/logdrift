@@ -1,18 +1,17 @@
-// Package metrics provides lightweight in-process counters for logdrift.
+// Package metrics provides lightweight counters and exporters for tracking
+// logdrift runtime statistics.
 //
-// It tracks two categories of events per service:
+// # Counter
 //
-//   - Entry counts: the total number of log lines received from a service.
-//   - Drift counts: the number of times a service produced a log entry that
-//     differed from the reference service in level, message, or fields.
+// Counter records per-service entry and drift counts and is safe for
+// concurrent use. Call RecordEntry for every log line processed and
+// RecordDrift whenever a DiffResult contains deltas.
 //
-// All operations on Counter are safe for concurrent use.
+// # Exporter
 //
-// Typical usage:
+// Exporter snapshots a Counter and writes the result to any io.Writer in
+// either human-readable text (tabwriter) or machine-readable JSON format.
 //
-//	ctr := metrics.New()
-//	ctr.RecordEntry("auth-service")
-//	ctr.RecordDrift("auth-service")
-//	fmt.Println(ctr.Entries())
-//	fmt.Println(ctr.Drifts())
+//	exporter := metrics.NewExporter(counter, "json")
+//	exporter.Export(os.Stdout)
 package metrics
