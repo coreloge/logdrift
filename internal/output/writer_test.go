@@ -69,7 +69,7 @@ func TestWriteLines_Empty(t *testing.T) {
 		t.Fatalf("unexpected error on empty lines: %v", err)
 	}
 	if buf.Len() != 0 {
-		t.Errorf("expected empty buffer", buf.String())
+		t.Errorf("expected empty buffer, got %q", buf.String())
 	}
 }
 
@@ -86,5 +86,21 @@ func TestWriteLine_ConcurrentSafe(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		<-done
+	}
+}
+
+// TestWriteLine_EmptyString verifies that writing an empty string still
+// produces a newline character in the output.
+func TestWriteLine_EmptyString(t *testing.T) {
+	var buf bytes.Buffer
+	w := output.New(&buf, output.FormatText)
+
+	if err := w.WriteLine(""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := buf.String()
+	if got != "\n" {
+		t.Errorf("expected bare newline %q, got %q", "\n", got)
 	}
 }
