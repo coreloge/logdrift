@@ -62,3 +62,13 @@ func (w *Writer) WriteLines(lines []string) error {
 func (w *Writer) Format() Format {
 	return w.format
 }
+
+// WriteLinef formats a line according to the given format specifier and
+// writes it followed by a newline. It is equivalent to calling
+// WriteLine(fmt.Sprintf(format, args...)).
+func (w *Writer) WriteLinef(format string, args ...any) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	_, err := fmt.Fprintf(w.out, format+"\n", args...)
+	return err
+}
