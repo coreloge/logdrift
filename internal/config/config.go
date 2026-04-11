@@ -48,6 +48,17 @@ func Load(path string) (*Config, error) {
 	return &cfg, nil
 }
 
+// ServiceByName returns the ServiceConfig with the given name, or an error if
+// no service with that name exists.
+func (c *Config) ServiceByName(name string) (*ServiceConfig, error) {
+	for i := range c.Services {
+		if c.Services[i].Name == name {
+			return &c.Services[i], nil
+		}
+	}
+	return nil, fmt.Errorf("no service named %q", name)
+}
+
 // validate checks that the config is semantically valid.
 func (c *Config) validate() error {
 	if len(c.Services) == 0 {
