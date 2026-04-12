@@ -15,4 +15,15 @@
 //	for entry := range ch {
 //	    // process entry
 //	}
+//
+// Replay speed:
+//
+// Setting DelayPerLine to 0 causes the Replayer to emit all entries as fast as
+// possible, which is useful for benchmarks. For realistic simulations, a value
+// of 50–200ms approximates a moderately busy service.
+//
+// Context cancellation:
+//
+// Cancelling the context passed to Run causes the Replayer to stop reading and
+// close the output channel cleanly, without dropping any already-queued entries.
 package replay
