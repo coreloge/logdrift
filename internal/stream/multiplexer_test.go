@@ -39,6 +39,17 @@ func TestNew_MissingFile(t *testing.T) {
 	}
 }
 
+func TestNew_EmptySources(t *testing.T) {
+	sources := map[string]string{}
+	m, err := New(sources)
+	if err != nil {
+		t.Fatalf("expected no error for empty sources, got %v", err)
+	}
+	if m == nil {
+		t.Fatal("expected non-nil multiplexer")
+	}
+}
+
 func TestMultiplexer_ReceivesEntries(t *testing.T) {
 	pA := writeTempFile(t, "{\"level\":\"info\",\"msg\":\"hello\"}\n")
 	pB := writeTempFile(t, "{\"level\":\"warn\",\"msg\":\"world\"}\n")
