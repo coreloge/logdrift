@@ -86,3 +86,21 @@ func TestRemoveField_RemovesAtRuntime(t *testing.T) {
 		t.Fatal("expected dc to be removed")
 	}
 }
+
+// TestApply_MultipleStaticFields verifies that all static fields are applied
+// when the entry has no pre-existing extra fields.
+func TestApply_MultipleStaticFields(t *testing.T) {
+	opts := enrich.DefaultOptions()
+	opts.StaticFields = map[string]string{
+		"env":    "prod",
+		"region": "us-east",
+		"dc":     "dc1",
+	}
+	e := enrich.New(opts)
+	out := e.Apply(makeEntry("svc", "msg", nil))
+	for k, want := range opts.StaticFields {
+		if got := out.Extra[k]; got != want {
+			t.Errorf("expected %s=%q, got %q", k, want, got)
+		}
+	}
+}
