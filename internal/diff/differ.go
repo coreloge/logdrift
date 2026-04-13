@@ -31,6 +31,7 @@ type Result struct {
 }
 
 // Compare compares two log entries and returns a Result describing any differences.
+// It checks the Level (case-insensitive) and Message fields for divergence.
 func Compare(a, b Entry) Result {
 	var deltas []Delta
 
@@ -78,4 +79,16 @@ func FormatResult(r Result) string {
 		lines = append(lines, FormatDelta(d))
 	}
 	return strings.Join(lines, "\n")
+}
+
+// HasField reports whether the Result contains a delta for the given field name.
+// This is useful for callers that need to check for a specific kind of divergence
+// without iterating over all deltas manually.
+func (r Result) HasField(field string) bool {
+	for _, d := range r.Deltas {
+		if strings.EqualFold(d.Field, field) {
+			return true
+		}
+	}
+	return false
 }
