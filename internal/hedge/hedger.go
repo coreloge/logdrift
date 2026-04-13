@@ -39,6 +39,11 @@ func New(opts Options, sources ...(<-chan diff.Entry)) *Hedger {
 	return &Hedger{opts: opts, sources: sources}
 }
 
+// Len returns the number of sources the Hedger is configured to fan out to.
+func (h *Hedger) Len() int {
+	return len(h.sources)
+}
+
 // Stream returns a channel that emits the first entry received from any
 // source. All sources are drained concurrently; whichever delivers an
 // entry first wins and the result is forwarded downstream. The returned
