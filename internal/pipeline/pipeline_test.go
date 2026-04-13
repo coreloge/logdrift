@@ -18,6 +18,8 @@ type stubMultiplexer struct {
 	ch chan diff.Entry
 }
 
+// newStub creates a stubMultiplexer pre-loaded with the given entries.
+// The channel is closed immediately so the pipeline drains and exits naturally.
 func newStub(entries ...diff.Entry) *stubMultiplexer {
 	ch := make(chan diff.Entry, len(entries))
 	for _, e := range entries {
@@ -30,13 +32,14 @@ func newStub(entries ...diff.Entry) *stubMultiplexer {
 func (s *stubMultiplexer) Out() <-chan diff.Entry { return s.ch }
 func (s *stubMultiplexer) Stop()                 {}
 
-func TestPipeline_RunUntilContextCancelled(t *testing.T) {
-	mx := newStub() // empty — pipeline should exit via ctx cancel
+// newTestPipeline is a helper that wires up a Pipeline with the given
+// multiplexer, using a fresh counter, snapshot, collector, and a
+// discard renderer. It reduces boilerplate across test cases.
+func newTestPipeline(mx *stubMultiplexer) (*pipeline.Pipeline, *metrics.Counter) {
 	ctr := metrics.New()
 	snap := snapshot.New()
 	coll := snapshot.NewCollector(snap)
-	rdr := render.New(nil) // discard output
-
+	rdr := render.New(nil)
 	p := pipeline.New(pipeline.Config{
 		Multiplexer: mx,
 		Collector:   coll,
@@ -44,6 +47,12 @@ func TestPipeline_RunUntilContextCancelled(t *testing.T) {
 		Counter:     ctr,
 		FilterOpts:  stream.FilterOptions{},
 	})
+	return p, ctr
+}
+
+func TestPipeline_RunUntilContextCancelled(t *testing.T) {
+	mx := newStub() // empty — pipeline should exit via ctx cancel
+	p, _ := newTestPipeline(mx)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -60,18 +69,7 @@ func TestPipeline_RecordsEntries(t *testing.T) {
 		{Service: "api", Level: "info", Message: "ready"},
 	}
 	mx := newStub(entries...)
-	ctr := metrics.New()
-	snap := snapshot.New()
-	coll := snapshot.NewCollector(snap)
-	rdr := render.New(nil)
-
-	p := pipeline.New(pipeline.Config{
-		Multiplexer: mx,
-		Collector:   coll,
-		Renderer:    rdr,
-		Counter:     ctr,
-		FilterOpts:  stream.FilterOptions{},
-	})
+	p, ctr := newTestPipeline(mx)
 
 	ctx := context.Background()
 	_ = p.Run(ctx)
