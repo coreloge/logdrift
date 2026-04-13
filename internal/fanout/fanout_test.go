@@ -22,7 +22,7 @@ func collect(ch <-chan diff.Entry, n int) []diff.Entry {
 				return out
 			}
 			out = append(out, e)
-		case <-time.After(time.Second):
+			case <-time.After(time.Second):
 			return out
 		}
 	}
@@ -100,5 +100,27 @@ func TestFanout_StopsOnContextCancel(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Error("subscriber channel was not closed")
+	}
+}
+
+func TestFanout_SourceClosedWithNoSubscribers(t *testing.T) {
+	// Ensure Run completes cleanly when there are no subscribers and the
+	// source channel is closed immediately.
+	f := fanout.New(0)
+
+	src := make(chan diff.Entry)
+	close(src)
+
+	ctx := context.Background()
+	done := make(chan struct{})
+	go func() {
+		f.Run(ctx, src)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("Run did not stop after source channel was closed")
 	}
 }
