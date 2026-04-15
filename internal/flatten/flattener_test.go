@@ -72,6 +72,13 @@ func TestApply_CustomSeparator(t *testing.T) {
 	}
 }
 
+func TestNew_ZeroMaxDepth_ReturnsError(t *testing.T) {
+	_, err := flatten.New(flatten.Options{Separator: ".", MaxDepth: 0})
+	if err == nil {
+		t.Fatal("expected error for zero MaxDepth")
+	}
+}
+
 func TestStream_ForwardsAllEntries(t *testing.T) {
 	f, _ := flatten.New(flatten.DefaultOptions())
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
