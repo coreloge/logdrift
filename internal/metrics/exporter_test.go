@@ -82,3 +82,12 @@ func TestExport_EmptyCounter_JSON(t *testing.T) {
 			snap.TotalEntries, snap.TotalDrifts)
 	}
 }
+
+func TestExport_UnknownFormat(t *testing.T) {
+	c := New()
+	var buf bytes.Buffer
+	e := NewExporter(c, "xml")
+	if err := e.Export(&buf); err == nil {
+		t.Error("expected error for unknown format, got nil")
+	}
+}
