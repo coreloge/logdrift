@@ -41,6 +41,17 @@ func TestEntry_ContainsLevel(t *testing.T) {
 	}
 }
 
+func TestEntry_ContainsTimestamp(t *testing.T) {
+	var buf bytes.Buffer
+	r := render.New(&buf, true)
+	r.Entry("api", baseEntry("info", "server started"))
+	out := buf.String()
+	// baseEntry uses 2024-01-02 15:04:05 UTC
+	if !strings.Contains(out, "2024") {
+		t.Errorf("expected timestamp year in output, got: %s", out)
+	}
+}
+
 func TestDiffResult_Equal(t *testing.T) {
 	var buf bytes.Buffer
 	r := render.New(&buf, true)
