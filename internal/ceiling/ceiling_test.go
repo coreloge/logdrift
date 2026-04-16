@@ -117,12 +117,19 @@ func TestStream_DropsEntriesOverCeiling(t *testing.T) {
 	}
 }
 
-func TestStream_StopsOnContextCancel(t *testing.T) {
+func TestStream_CancelledContext_ClosesOutput(t *testing.T) {
+	c, _ := ceiling.New(ceiling.Options{Window: time.Minute, MaxPerWindow: 100})
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	c, _ := ceiling.New(ceiling.Options{Window: time.Minute, MaxPerWindow: 10})
-	in := make(chan diff.Entry)
-	close(in)
-	out := ceiling.Stream(ctx, in, c)
-	drain(out) // should not block
+	// input channel that never closes, to confirm context cancellation drives shutdown
+	input := make(chan diff.Entry)
+	out := ceiling.Stream(ctx, input, c)
+	select {
+	case _, ok := <-out:
+		if ok {
+			t.Fatal("expected output channel to be closed after context cancel")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for output channel to close")
+	}
 }
