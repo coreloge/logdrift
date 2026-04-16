@@ -94,3 +94,13 @@ func TestStream_StopsOnContextCancel(t *testing.T) {
 		t.Fatalf("expected 0 entries after cancel, got %d", len(got))
 	}
 }
+
+func TestStream_ExactlyMax_ForwardsAll(t *testing.T) {
+	h, _ := New(Options{Max: 3})
+	entries := []diff.Entry{makeEntry("a"), makeEntry("b"), makeEntry("c")}
+	out := h.Stream(context.Background(), feedEntries(entries))
+	got := drain(out)
+	if len(got) != 3 {
+		t.Fatalf("expected 3 entries, got %d", len(got))
+	}
+}
