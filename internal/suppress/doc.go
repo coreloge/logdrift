@@ -7,6 +7,11 @@
 // noise from high-frequency repeated log lines without losing the first
 // occurrence.
 //
+// The suppression state is held entirely in memory and is not persisted across
+// process restarts. Each (service, value) pair maintains its own independent
+// cooldown timer, so a burst from one service does not affect suppression
+// decisions for another.
+//
 // Usage:
 //
 //	supp, err := suppress.New(suppress.Options{
